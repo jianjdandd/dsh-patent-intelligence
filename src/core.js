@@ -7,14 +7,15 @@ export async function run(args,ctx={}){
   if(JUR_ACTION[action]){const {searchHybrid}=await import('./hybrid.js');return searchHybrid({...args,workspace,jurisdictions:[JUR_ACTION[action]],signal:ctx.signal})}
   switch(action){
     case 'strategy':{const {buildStrategy}=await import('./query.js');return buildStrategy({...args,workspace})}
-    case 'connectors':{const [{listConnectors},{listOfficialSources}]=await Promise.all([import('./connectors.js'),import('./official.js')]);return {ok:true,docdb:listConnectors(),official_sources:listOfficialSources()}}
-    case 'official_sources':{const {listOfficialSources}=await import('./official.js');return {ok:true,official_sources:listOfficialSources()}}
-    case 'verify_official':{const {verifyOfficial}=await import('./official.js');return verifyOfficial({...args,workspace,signal:ctx.signal})}
+    case 'connectors':{const {listConnectors}=await import('./connectors.js');return {ok:true,connectors:listConnectors()}}
+    case 'official_sources':{const {listOfficialSources}=await import('./official.js');return {ok:true,sources:listOfficialSources()}}
     case 'import':{const {importRecords}=await import('./store.js');return importRecords({...args,workspace})}
     case 'search_ops':{const {searchOps}=await import('./ops.js');return searchOps({...args,workspace,signal:ctx.signal})}
     case 'search_online':{const {searchHybrid}=await import('./hybrid.js');return searchHybrid({...args,workspace,signal:ctx.signal})}
     case 'search_country':{const {searchHybrid}=await import('./hybrid.js');const jurisdiction=args.jurisdiction||args.jurisdictions?.[0];if(!jurisdiction)throw new Error('search_country requires jurisdiction');return searchHybrid({...args,workspace,jurisdictions:[jurisdiction],signal:ctx.signal})}
     case 'fetch_biblio':{const {fetchHybrid}=await import('./hybrid.js');return fetchHybrid({...args,workspace,signal:ctx.signal})}
+    case 'verify_official':{const {verifyOfficial}=await import('./official.js');return verifyOfficial({...args,workspace,signal:ctx.signal})}
+    case 'details':{const {loadDetailedRecords}=await import('./verification-store.js');return {ok:true,records:loadDetailedRecords(workspace,{publication_numbers:args.publication_numbers||[],jurisdiction:args.jurisdiction||'',limit:args.limit||500})}}
     case 'workset':{const {workset}=await import('./store.js');return workset({...args,workspace})}
     case 'annotate':{const {annotate}=await import('./store.js');return annotate({...args,workspace})}
     case 'analyze':{const {analyze}=await import('./analyze.js');return analyze({...args,workspace})}

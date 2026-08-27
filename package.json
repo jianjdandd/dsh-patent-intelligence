@@ -1,14 +1,13 @@
 {
-  "name": "dsh-patent-intelligence",
-  "version": "0.0.3",
-  "description": "Lightweight DeepSeek Harness plugin for global patent search with DOCDB master data and official-source verification/supplement.",
-  "type": "module",
-  "main": "index.js",
-  "files": ["index.js","cordis.patch.yml","src/","test/","README.md","CHANGELOG.md","VERSION","ROADMAP.md","LICENSE"],
-  "scripts": {"test":"node test/smoke.mjs"},
-  "engines": {"node": ">=22"},
-  "dependencies": {"xlsx": "^0.18.5"},
-  "keywords": ["deepseek-harness","dsh-plugin","patent","patent-intelligence","prior-art","fto"],
-  "license": "MIT",
-  "dsh": {"bundle":{"patch":"./cordis.patch.yml"},"patentIntelligence":{"version":"0.0.3.0"}}
+  "name":"dsh-patent-intelligence",
+  "version":"0.0.3",
+  "description":"Lightweight DeepSeek Harness plugin for global patent search, DOCDB retrieval, official-source enrichment, normalization, family analysis and reporting.",
+  "type":"module","main":"index.js",
+  "files":["index.js","cordis.patch.yml","src/","test/","README.md","CHANGELOG.md","VERSION","ROADMAP.md","LICENSE"],
+  "scripts":{"test":"node test/smoke.mjs"},
+  "engines":{"node":">=22"},
+  "dependencies":{"xlsx":"^0.18.5"},
+  "keywords":["deepseek-harness","dsh-plugin","patent","patent-intelligence","prior-art","fto"],
+  "license":"MIT",
+  "dsh":{"bundle":{"patch":"./cordis.patch.yml"},"patentIntelligence":{"version":"0.0.3.2"}}
 }
