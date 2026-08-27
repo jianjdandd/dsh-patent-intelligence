@@ -11,6 +11,7 @@ export async function run(args,ctx={}){
     case 'import':{const {importRecords}=await import('./store.js');return importRecords({...args,workspace})}
     case 'search_ops':{const {searchOps}=await import('./ops.js');return searchOps({...args,workspace,signal:ctx.signal})}
     case 'search_online':{const {searchOnline}=await import('./ops.js');return searchOnline({...args,workspace,signal:ctx.signal})}
+    case 'search_country':{const {searchOnline}=await import('./ops.js');const jurisdiction=args.jurisdiction||args.jurisdictions?.[0];if(!jurisdiction)throw new Error('search_country requires jurisdiction');return searchOnline({...args,workspace,jurisdictions:[jurisdiction],signal:ctx.signal})}
     case 'fetch_biblio':{const {fetchBiblio}=await import('./ops.js');return fetchBiblio({...args,workspace,signal:ctx.signal})}
     case 'workset':{const {workset}=await import('./store.js');return workset({...args,workspace})}
     case 'annotate':{const {annotate}=await import('./store.js');return annotate({...args,workspace})}
