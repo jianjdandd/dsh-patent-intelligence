@@ -1,0 +1,22 @@
+name: ci
+on:
+  push:
+  pull_request:
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm install
+      - run: node --check index.js
+      - run: node --check src/core.js
+      - run: node --check src/query.js
+      - run: node --check src/store.js
+      - run: node --check src/ops.js
+      - run: node --check src/analyze.js
+      - run: node --check src/report.js
+      - run: node --input-type=module -e "import('./src/query.js').then(m=>console.log(m.buildStrategy({concepts:[{name:'x',terms:['battery']}] }).queries.epo_ops_cql))"

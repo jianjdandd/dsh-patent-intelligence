@@ -1,0 +1,6 @@
+node_modules/
+patent-workspace/
+*.sqlite-wal
+*.sqlite-shm
+.env
+.DS_Store
