@@ -2,7 +2,7 @@
 
 Lightweight DeepSeek Harness plugin for professional patent search and analysis.
 
-Internal plugin version: **0.1.1.0**. `package.json` uses npm-compatible SemVer `0.1.1`; the fourth revision digit is kept in `VERSION`, Git tags and `dsh.patentIntelligence.version`.
+Internal plugin version: **0.1.1.1**. `package.json` uses npm-compatible SemVer `0.1.1`; the fourth revision digit is kept in `VERSION` and `dsh.patentIntelligence.version`.
 
 ## Scope
 
@@ -46,6 +46,6 @@ IncoPat and Derwent/DWPI data access depends on the user's subscription and lice
 
 ## Versioning
 
-Project convention: `MAJOR.MINOR.FEATURE.REVISION`, e.g. `0.1.1.0`.
+Project convention: `MAJOR.MINOR.FEATURE.REVISION`, e.g. `0.1.1.1`.
 
-NPM itself requires three-part SemVer, so npm package versions map `0.1.1.0 -> 0.1.1`; the full four-part version remains in `VERSION`, Git tags and plugin metadata.
+NPM itself requires three-part SemVer, so npm package versions map `0.1.1.x -> 0.1.1`; the full four-part version remains in `VERSION` and plugin metadata.

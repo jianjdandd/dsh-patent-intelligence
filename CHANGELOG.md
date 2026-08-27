@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1.1 - 2026-08-27
+
+- Fix GitHub Actions smoke workflow: remove npm cache configuration that required a missing lockfile.
+- No runtime/API/schema change from 0.1.1.0.
+
 ## 0.1.1.0 - 2026-08-27
 
 - Initial lightweight DeepSeek Harness bundle.
