@@ -1,119 +1,100 @@
 # dsh-patent-intelligence
 
-Lightweight DeepSeek Harness plugin for professional global patent search and analysis.
+Lightweight DeepSeek Harness plugin for professional global patent intelligence.
 
-Internal version: **0.0.2.0** (`package.json` uses npm-compatible `0.0.2`).
+Internal version: **0.0.3.0** (`package.json` SemVer: `0.0.3`).
 
-## Online patent entrances
+## Architecture: DOCDB master + official verification
 
-Built-in online entrances:
+The default online pipeline is now:
 
-- China: `search_cn` (CN)
-- United States: `search_us` (US)
-- Europe/EPO: `search_ep` (EP)
-- WIPO/PCT: `search_wo` (WO)
-- Japan: `search_jp` (JP)
-- Korea: `search_kr` (KR)
-- United Kingdom: `search_gb` (GB)
-- France: `search_fr` (FR)
-- Germany: `search_de` (DE)
-- India: `search_in` (IN)
-- Generic ST.3 office: `search_country`
-- Multiple offices: `search_online`
-- Known publication numbers: `fetch_biblio`
+`search -> EPO OPS/DOCDB worldwide master data -> jurisdiction official verification/supplement -> field-level provenance -> SQLite -> analysis/report`
 
-The common online backbone is **EPO OPS/DOCDB**. Once EPO OPS credentials are configured, these entrances retrieve and store bibliographic data automatically without requiring manual Excel export.
+DOCDB remains the common backbone for CN, US, EP, WO/PCT, JP, KR, GB, FR, DE and IN. After each `search_online` or jurisdiction shortcut, the plugin automatically tries the official source for that jurisdiction unless `official_enrich=false`.
 
-## Bibliographic fields
+### Official second-pass sources
 
-When supplied by DOCDB/OPS the connector captures:
+| Jurisdiction | Official source | Automation in 0.0.3.0 | Credential |
+|---|---|---|---|
+| US | USPTO Open Data Portal / Patent File Wrapper | Yes | `USPTO_ODP_API_KEY` |
+| KR | KIPRIS Plus Patent-Utility Model Publications | Yes | `KIPRIS_SERVICE_KEY` |
+| FR | INPI API PI Brevets | Yes | `INPI_XSRF_TOKEN`, `INPI_ACCESS_TOKEN`, `INPI_SESSION_TOKEN` |
+| EP | EPO OPS/DOCDB | Yes; DOCDB is already the issuing-office source | EPO OPS credentials |
+| WO/PCT | WIPO PATENTSCOPE Webservice | Conditional/fee-based; reported explicitly when not configured | WIPO subscription |
+| CN | CNIPA official search/data-resource platforms | Official portal; no stable public unattended per-record REST API documented | — |
+| JP | JPO / J-PlatPat | Official portal; no general public per-record REST API documented | — |
+| GB | UKIPO | Official portal; no stable public general patent REST API documented | — |
+| DE | DPMA / DPMAregister | Official portal; no stable public general patent REST API documented | — |
+| IN | Indian Patent Office | Official portal; no stable public general patent REST API documented | — |
 
-- publication number
-- application number
-- priority number(s)
-- earliest priority date
-- title
-- abstract
-- applicant / assignee / patent applicant names
-- inventor names
-- IPC
-- CPC
-- filing date
-- publication date
-- family id when present
-- source and retrieval timestamp in the raw record
+The plugin does **not** label a record as officially verified when an official machine interface is unavailable or credentials are missing. It records states such as `credentials_missing`, `subscription_required`, `official_api_unavailable`, `official_fetch_failed`, `verified`, `verified_and_supplemented`, and `conflict_reviewed`.
 
-Records are normalized into `patents.sqlite`; the original normalized source record is retained through `raw_json`.
+## Evidence and provenance
+
+Canonical patent rows retain the existing DOCDB-oriented schema and add:
+
+- `official_verified`
+- `official_source`
+- `official_checked_at`
+- `verification_status`
+- `verification_json`
+
+A new `patent_sources` table preserves source snapshots separately, so DOCDB and national-office records are both retained instead of one silently overwriting the other.
+
+Field-level verification covers application/priority/family identifiers, title, abstract, applicants, inventors, IPC/CPC, filing/priority/publication/grant dates and legal status when supplied by the official source. Conflicting list fields are merged; authoritative jurisdiction-specific status/date fields prefer the official source while the conflict remains recorded in `verification_json`.
+
+## Online actions
+
+- `search_online`: multi-jurisdiction DOCDB retrieval followed by official verification/supplement.
+- `search_cn`, `search_us`, `search_ep`, `search_wo`, `search_jp`, `search_kr`, `search_gb`, `search_fr`, `search_de`, `search_in`: jurisdiction shortcuts with the same two-stage pipeline.
+- `search_country`: generic ST.3 jurisdiction entry.
+- `fetch_biblio`: DOCDB lookup for known publication numbers, then official verification where supported.
+- `verify_official`: re-check already stored records against the official source.
+- `official_sources`: show official-source capability and whether required credentials are configured.
+- `search_ops`: raw EPO OPS/DOCDB search without the hybrid orchestration layer.
+
+Example:
+
+```json
+{
+  "action": "search_online",
+  "query": "ta=(resveratrol) AND ta=(ferment* OR biosynth*)",
+  "jurisdictions": ["CN","US","EP","WO","JP","KR","FR"],
+  "limit_per_jurisdiction": 100
+}
+```
+
+Re-verify stored US records:
+
+```json
+{
+  "action": "verify_official",
+  "jurisdiction": "US",
+  "publication_numbers": ["US20240123456A1"]
+}
+```
 
 ## Credentials
 
-Configure once in the DeepSeek Harness runtime environment:
+DOCDB backbone:
 
 ```bash
 EPO_OPS_KEY=...
 EPO_OPS_SECRET=...
 ```
 
-OPS uses OAuth. The plugin caches and reuses the access token, and `search_online` reuses one token across all selected jurisdictions.
+Official supplements as needed:
 
-## Examples
-
-Multi-jurisdiction search:
-
-```json
-{
-  "action":"search_online",
-  "query":"ta=(resveratrol) AND ta=(ferment* OR biosynth*)",
-  "jurisdictions":["CN","US","EP","WO","JP","KR","GB","FR","DE","IN"],
-  "limit":500
-}
+```bash
+USPTO_ODP_API_KEY=...
+KIPRIS_SERVICE_KEY=...
+INPI_XSRF_TOKEN=...
+INPI_ACCESS_TOKEN=...
+INPI_SESSION_TOKEN=...
 ```
 
-China only:
+The USPTO ODP requires an API key/account; KIPRIS Plus requires its service key; INPI API PI requires an API account/session tokens. WIPO PCT Webservice is a conditional subscription service.
 
-```json
-{
-  "action":"search_cn",
-  "query":"ta=(resveratrol) AND ta=(biosynth*)",
-  "limit":100,
-  "return_records":true
-}
-```
+## Design rule
 
-Any ST.3 authority:
-
-```json
-{
-  "action":"search_country",
-  "jurisdiction":"CA",
-  "query":"ta=(resveratrol)",
-  "limit":100
-}
-```
-
-Known publications:
-
-```json
-{
-  "action":"fetch_biblio",
-  "publication_numbers":["CN123456789A","US12345678B2","EP1234567A1","WO2026123456A1"]
-}
-```
-
-## Source policy
-
-The ten fixed country entrances use EPO OPS/DOCDB as the stable common online source. This keeps the plugin small while providing one normalized data contract across jurisdictions. Source-specific connectors (for example KIPRIS Plus or USPTO-specific services) can later override/enrich DOCDB without changing the DSH tool surface or SQLite schema.
-
-Large OPS searches are limited by the service retrieval window; partition large result sets by date, CPC/IPC, applicant or technology block for exhaustive projects.
-
-## Commercial databases
-
-IncoPat and Derwent/DWPI remain license-dependent. The plugin continues to generate search strategies and import user-authorized XLSX/CSV exports for enrichment and cross-checking.
-
-## Architecture
-
-One model-visible tool (`patent_intel`) + action router + dynamic imports. Connectors load only when called, minimizing DeepSeek Harness startup/context overhead.
-
-## Versioning
-
-Project convention: `MAJOR.MINOR.FEATURE.REVISION`. Current release line: `0.0.2.*`; first release: **0.0.2.0**.
+One model-visible tool (`patent_intel`) + action router + dynamic imports. Official adapters and verification storage are loaded only when called, keeping DeepSeek Harness startup and context overhead small.

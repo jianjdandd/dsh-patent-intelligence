@@ -18,7 +18,11 @@ jobs:
       - run: node --check src/version.js
       - run: node --check src/store.js
       - run: node --check src/ops.js
+      - run: node --check src/hybrid.js
+      - run: node --check src/official.js
+      - run: node --check src/verification-store.js
       - run: node --check src/analyze.js
       - run: node --check src/report.js
       - run: npm test
       - run: node --input-type=module -e "import('./src/query.js').then(m=>console.log(m.buildStrategy({concepts:[{name:'x',terms:['battery']}] }).queries.epo_ops_cql))"
+      - run: node --input-type=module -e "import('./src/official.js').then(m=>console.log(m.listOfficialSources().map(x=>x.jurisdiction+':'+x.mode).join(',')))"
