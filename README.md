@@ -1,51 +1,57 @@
 # dsh-patent-intelligence
 
-Lightweight DeepSeek Harness plugin for professional patent search and analysis.
+Lightweight DeepSeek Harness plugin for professional global patent search and analysis.
 
-Internal plugin version: **0.1.1.1**. `package.json` uses npm-compatible SemVer `0.1.1`; the fourth revision digit is kept in `VERSION` and `dsh.patentIntelligence.version`.
+Internal version: **0.2.0.0**.
 
-## Scope
+## Online coverage
 
-Target jurisdictions: **CN, US, EP, WO/PCT, JP, KR, GB, DE, FR, CA, AU, IN**.
+The plugin can automatically retrieve bibliographic patent data for **CN, US, EP, WO/PCT, JP, KR, GB, FR, DE and IN**. The common online backbone is EPO OPS/DOCDB, whose worldwide bibliographic data covers 100+ patent authorities. Returned/stored fields include publication number, application number, priorities, title, abstract, applicants, inventors, IPC/CPC and key dates when available.
 
-Workflow:
+This design gives every target jurisdiction an online path immediately while keeping the DSH plugin small. Source-specific official connectors can be added later without changing the unified patent schema. For WIPO PATENTSCOPE, full programmatic webservice access is licensed/conditional; for KIPRIS Plus, the dedicated API can be added when an API key is configured.
 
-`natural-language question -> multilingual search concepts -> IncoPat/DWPI/public-office queries -> bibliographic retrieval/import -> normalization -> family merge -> technical classification -> technical-route extraction -> core-patent scoring -> SQLite/JSON/Markdown/Excel/HTML`
+## Main workflow
 
-## Design goals
+`natural-language question -> strategy -> online search / commercial export import -> normalization -> family merge -> technical classification -> route extraction -> core patent scoring -> SQLite/JSON/Markdown/Excel/HTML`
 
-- One model-visible tool: `patent_intel`.
-- Pure ESM, no build step.
-- Heavy modules are dynamically imported only when used.
-- SQLite is Node built-in `node:sqlite`.
-- Only one runtime dependency (`xlsx`), loaded only for Excel import/export.
-- Commercial databases are supported primarily through query generation + exported Excel/CSV import; credentials/APIs can be added as optional connectors without changing the core schema.
+## Online actions
 
-## Install
+- `connectors`: list online jurisdiction coverage and source.
+- `search_online`: search several jurisdictions in one call using an EPO OPS CQL base query.
+- `search_cn`, `search_us`, `search_ep`, `search_wo`, `search_jp`, `search_kr`, `search_gb`, `search_fr`, `search_de`, `search_in`: jurisdiction shortcuts.
+- `fetch_biblio`: retrieve bibliographic records for known publication numbers.
+- `search_ops`: direct EPO OPS query for advanced users.
 
-```bash
-dsh plugin --profile web add ./dsh-patent-intelligence
+Example:
+
+```json
+{
+  "action":"search_online",
+  "query":"ta=(resveratrol) AND ta=(ferment* OR biosynth*)",
+  "jurisdictions":["CN","US","EP","WO","JP","KR"],
+  "limit":600
+}
 ```
 
-Then run DSH normally.
+## Credentials
 
-## Tool actions
+Set EPO OPS credentials in the runtime environment:
 
-- `strategy`: agent converts the natural-language request into multilingual concept blocks, then the plugin emits canonical and database-specific query strings.
-- `import`: import `.xlsx/.xls/.csv/.tsv/.json/.jsonl` exported from IncoPat, DWPI/Derwent or other databases.
-- `search_ops`: retrieve EPO OPS bibliographic search results. Requires `EPO_OPS_KEY` and `EPO_OPS_SECRET`.
-- `workset`: return compact patent records for LLM classification and technical-route extraction.
-- `annotate`: write LLM annotations back to SQLite.
-- `analyze`: family-level merge/normalization and deterministic core-patent scoring.
-- `report`: export SQLite/JSON/Markdown/Excel/HTML.
-- `status`: workspace statistics.
+```bash
+EPO_OPS_KEY=...
+EPO_OPS_SECRET=...
+```
 
-## Commercial database policy
+OPS uses OAuth and is the same EPO data family behind Espacenet/European Patent Register. Large searches must be partitioned because one OPS bibliographic query exposes at most 2,000 hits.
 
-IncoPat and Derwent/DWPI data access depends on the user's subscription and license. This plugin does **not** bypass access controls. It generates search strategies and imports user-authorized exports. API connectors should only be enabled where the account/license expressly permits automation and bulk retrieval.
+## Commercial databases
+
+IncoPat and Derwent/DWPI access remains license-dependent. The plugin generates queries and imports authorized XLSX/CSV exports; licensed APIs can be added as optional connectors.
+
+## Architecture
+
+One model-visible tool (`patent_intel`) + action router + dynamic imports. No connector is loaded until called, minimizing DeepSeek Harness startup/context overhead.
 
 ## Versioning
 
-Project convention: `MAJOR.MINOR.FEATURE.REVISION`, e.g. `0.1.1.1`.
-
-NPM itself requires three-part SemVer, so npm package versions map `0.1.1.x -> 0.1.1`; the full four-part version remains in `VERSION` and plugin metadata.
+`MAJOR.MINOR.FEATURE.REVISION`; current `0.2.0.0`.

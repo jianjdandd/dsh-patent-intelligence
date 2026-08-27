@@ -1,18 +1,15 @@
 # Changelog
 
-## 0.1.1.1 - 2026-08-27
+## 0.2.0.0 - 2026-08-27
+- Added online multi-jurisdiction bibliographic retrieval for CN, US, EP, WO/PCT, JP, KR, GB, FR, DE and IN.
+- Added `search_online` plus jurisdiction shortcuts `search_cn/search_us/search_ep/search_wo/search_jp/search_kr/search_gb/search_fr/search_de/search_in`.
+- Added `fetch_biblio` for known publication numbers.
+- Added connector registry and explicit source/fallback metadata.
+- Expanded EPO OPS parsing to applicant, inventor, IPC/CPC, priority and key bibliographic dates.
+- Centralized internal version constant.
 
-- Fix GitHub Actions smoke workflow: remove npm cache configuration that required a missing lockfile.
-- No runtime/API/schema change from 0.1.1.0.
+## 0.1.1.1 - 2026-08-27
+- Fixed CI workflow cache configuration.
 
 ## 0.1.1.0 - 2026-08-27
-
-- Initial lightweight DeepSeek Harness bundle.
-- Single `patent_intel` tool with action router.
-- CN/US/EP/WO/JP/KR/GB/DE/FR/CA/AU/IN target-jurisdiction model.
-- Search strategy/query pack for IncoPat, DWPI/Derwent, EPO OPS, WIPO PATENTSCOPE, USPTO Patent Public Search and Google Patents, plus national-office templates.
-- CSV/XLSX/JSON import and canonical SQLite schema.
-- Heuristic family merge, technical classification and core-patent scoring.
-- LLM workset/annotation loop for technical-route extraction.
-- SQLite/JSON/Markdown/Excel/HTML reporting.
-- Optional EPO OPS bibliographic retrieval.
+- Initial MVP.
